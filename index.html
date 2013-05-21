@@ -13,13 +13,14 @@
 	</head>
 
 	<body>
-		<!--<video preload="none" poster="assets/poster.jpg">
+		<video preload="none" poster="assets/poster.jpg" width="800">
 			<source src="http://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
 			<source src="http://vjs.zencdn.net/v/oceans.webm" type="video/webm">
 		</video>
 		<div class="video-control">
+			<input class="knob" data-angleOffset=-125 data-angleArc=250 data-fgColor="#66EE66" value="0" data-thickness=".2">
 			<div type="button" class="state-button"></div>
-		</div>-->
+		</div>
 		<!--<div class="timeline-wrapper">
 
 			<div class="timeline 120deg">
@@ -33,11 +34,12 @@
 		<!--<div class="timeline">
 
 		</div>-->
-
+		
 		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 		<script src="jquery-1.9.1.js"></script>
 		<script src="underscore.js"></script>
 		<script src="backbone.js"></script>
+		<script src="jquery.knob.js"></script>
 		<script src="app.js"></script>
 	</body>
 </html>

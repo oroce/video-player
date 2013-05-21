@@ -107,3 +107,14 @@
 .arc{
 	opacity: 0.4;
 }
+.video-control{
+	position: absolute;
+	top: 180px;
+	left: 600px;
+}
+.state-button{
+	position: relative;
+	top: -184px;
+	left: 74px;
+	border: solid 5px yellow;
+}
