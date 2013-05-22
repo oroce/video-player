@@ -21,6 +21,7 @@
 	text-align: center;
 	vertical-align: middle;
 	font-size: 42px;
+	cursor: pointer;
 }
 /*.timeline-wrapper{
 	position:absolute;
@@ -108,13 +109,75 @@
 	opacity: 0.4;
 }
 .video-control{
-	position: absolute;
+	/*position: absolute;
 	top: 180px;
-	left: 600px;
+	left: 600px;*/
+	font-family: "PlayRegular";
 }
 .state-button{
 	position: relative;
 	top: -184px;
 	left: 74px;
 	border: solid 5px yellow;
+}
+.video-old-controls .controls{
+	height: 34px;
+}
+.video-old-controls .controls .control{
+	cursor: pointer;
+	position: relative;
+	padding: 0 10px 0 10px;
+	display:inline-block;
+	height: 100%;
+	background-color: #25272A;
+	color: white;
+	font-size: 30px;
+	width: 40px;
+	margin-right: -4px;
+	text-align: center;
+	vertical-align: middle;
+}
+.video-old-controls .control.play-pause{
+	border-radius: 28px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	position: relative;
+
+	margin: 0px -11px 0 -7px;
+}
+.video-old-controls .control.previous{
+	border-radius: 7px 0 0 7px;
+}
+.video-old-controls .control.next{
+	border-radius: 0 7px 7px 0;
+	margin-right: 0;
+}
+.video-controls{
+	height: 80px;
+	width: 160px;
+}
+.control-item{
+	display:inline-block;
+	position: relative;
+	height: 80px;
+	cursor: pointer;
+	vertical-align:middle;
+	margin-top: -30px;
+}
+.control-item.video-timeline-wrapper{
+	width: 90px;
+}
+.control-item.rewind, .control-item.forward{
+	margin-top: 30px;
+	width: 30px;
+}
+.video-time{
+	width: 150px;
+	text-align:center;
+}
+.video-time strong{
+	display:block;
+}
+.video-controlling{
+	width: 160px;
 }

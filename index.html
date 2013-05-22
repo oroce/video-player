@@ -13,10 +13,11 @@
 	</head>
 
 	<body>
-		<!--<video preload="none" poster="assets/poster.jpg" width="800">
+		<video preload="none" poster="assets/poster.jpg" width="800">
 			<source src="http://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
 			<source src="http://vjs.zencdn.net/v/oceans.webm" type="video/webm">
 		</video>
+		<!--
 		<div class="video-control">
 			<input class="knob" data-angleOffset=-125 data-angleArc=250 data-fgColor="#66EE66" value="0" data-thickness=".2">
 			<div type="button" class="state-button"></div>
@@ -34,8 +35,32 @@
 		<!--<div class="timeline">
 
 		</div>-->
-		
-		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<div class="video-controlling">
+			<div class="video-controls">
+				<span class="rewind control-item" >&lt;&lt;</span>
+				<span class="control-item video-timeline-wrapper">
+					<svg class="video-timeline"></svg>
+				</span>
+				<span class="forward control-item">&gt;&gt;</span>
+			</div>
+			<div class="video-time">
+				<strong>00:00:00:00</strong>
+				<small>HH:MM:SS:MS</small>
+			</div>
+		</div>
+		<div class="video-old-controls" style="border:solid 1px black">
+			<h1>ez csak teszt volt, mert azt hittem hogy ilyen is lesz:)</h1>
+			<div class="video-control">
+				<div class="controls">
+					<span class="control previous">|&lt;&lt;</span>
+					<span class="control rewind">&lt;&lt;</span>
+					<span class="control play-pause">&gt;</span>
+					<span class="control forward">&gt;&gt;</span>
+					<span class="control next">&gt;&gt;|</span>
+				</div>
+			</div>
+		</div>
+		<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
 		<script src="jquery-1.9.1.js"></script>
 		<script src="underscore.js"></script>
 		<script src="backbone.js"></script>

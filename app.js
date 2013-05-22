@@ -4,21 +4,23 @@ var
 	min = Math.min;
 var VideoPlayer = Backbone.View.extend({
 	events: {
-		"click .state-button": "stateChange",
+		"mousedown .state-button": "stateChange",
 		"mouseup .timeline": "jump",
-		"mousemove .arc": "onmousemove"
+		"mousemove .arc": "onmousemove",
+		"click .video-controls .rewind": "rewind",
+		"click .video-controls .forward": "forward"
 	},
 	initialize: function(){
 		this.stateButton = this.$( ".state-button" );
 		this._state = "play";
 		this.setStateButton();
-		this.knobEl = this.$(".knob" );
+		/*this.knobEl = this.$(".knob" );
 		this.knobEl.knob({
 			change: _.bind( this.onChange, this )
-		});
+		});*/
 		this.videoEl = this.$( "video" )
 			.on( "timeupdate", _.bind( this.onTimeUpdate, this ) )[0];
-		this.$( ".arc" ).on("mousemove", _.bind( this.onmousemove, this ) );
+		this.$( ".arc" ).on("mousedown", _.bind( this.onmousemove, this ) );
 		this._v = 0;
 		var o = this.$( "svg" ).offset();
 		this.x = o.left;
@@ -31,6 +33,8 @@ var VideoPlayer = Backbone.View.extend({
 			step: 1,
 			stopper: true
 		};
+
+		this.$el.find(".state-button").on( "click", _.bind( this.stateChange, this ));
 	},
 
 	setStateButton: function(){
@@ -38,6 +42,7 @@ var VideoPlayer = Backbone.View.extend({
 	},
 
 	stateChange: function(){
+		console.log("stateChange")
 		var oldState = this._state;
 		if( this.videoEl.paused !== true ){
 			this._state = "play";
@@ -51,13 +56,20 @@ var VideoPlayer = Backbone.View.extend({
 
 		this.setStateButton();
 	},
-	onTimeUpdate: function(){
-
+	formatTime: function( num ){
+		return ( "0" + Math.floor( num ) ).slice( -2 );
+	},
+	onTimeUpdate: function( draw ){
 		var value = (100 / this.videoEl.duration) * this.videoEl.currentTime;
-
-		this.knobEl
-			.val( Math.floor( value ) )
-			.trigger( "change" );
+		var time = this.videoEl.currentTime;
+		var hours = this.formatTime( ~~(time / 3600) );
+		var minutes = this.formatTime( ~~((time % 3600) / 60) );
+		var secs = this.formatTime( time % 60 );
+		if( draw !== false ){
+			this.val( value )
+			this._draw();
+		}
+		this.$( ".video-time strong" ).text( [ hours, minutes, secs ].join( ":" ) );
 	},
 	onmousemove: function( e ){
 		//console.log( "move", e, e.originalEvent );
@@ -70,8 +82,10 @@ var VideoPlayer = Backbone.View.extend({
 			return;
 		}
 
-    this.change(this._validate(v));
-    this._draw();
+		this.change(this._validate(v));
+		this._draw();
+		var time = this.videoEl.duration * (this.val() / 100);
+		this.videoEl.currentTime = time;
 	},
 	val: function( v ){
 		if( v == null ){
@@ -84,8 +98,8 @@ var VideoPlayer = Backbone.View.extend({
 		var time = this.videoEl.duration * (value / 100);
 		this.videoEl.currentTime = time;
 	},
-	angleOffset: -125 * Math.PI / 180,
-	angleArc: 250 * Math.PI / 180, 
+	angleOffset: -130 * Math.PI / 180,
+	angleArc: 310 * Math.PI / 180,
 	PI2: 2*Math.PI,
 	xy2val: function (x, y) {
 			var a, ret;
@@ -116,7 +130,37 @@ var VideoPlayer = Backbone.View.extend({
 		this.val(v);
 	},
 	_draw: function(){
-		console.log( "draw that shit", this.val() );
+		console.log( "draw that shit", this.val(), [this.val(), 100 - this.val()] );
+		path = path.data(pie([this.val(), 100 - this.val()])); // update the data
+		path.transition().duration(10).attrTween("d", arcTween);
+		//this.onTimeUpdate( false );
+	},
+	rewind: function(){
+		var playbackRate = this.videoEl.playbackRate,
+				newRate;
+
+		if( playbackRate < 0 ){
+			// should set back to normal
+			newRate = 1;
+		}
+		else{
+			newRate = -5;
+		}
+		this.videoEl.playbackRate = newRate;
+	},
+
+	forward: function(){
+		var playbackRate = this.videoEl.playbackRate,
+				newRate;
+
+		if( playbackRate > 1 ){
+			// should set back to normal
+			newRate = 1;
+		}
+		else{
+			newRate = 5;
+		}
+		this.videoEl.playbackRate = newRate;
 	}
 }, {
 	stateTexts: {
@@ -134,15 +178,15 @@ var VideoPlayer = Backbone.View.extend({
 
 	var arc = d3.svg.arc()
 			.outerRadius(radius + 5)
-			.innerRadius(radius - 10);
+			.innerRadius(radius - 15);
 
 	var pie = d3.layout.pie()
 			.sort(null)
 			.value(function( d ){ return d;})
 			.startAngle( 0.2 )
-			.endAngle( 4.9 );
+			.endAngle( 5.7 );
 
-	var svg = d3.select("body").append("svg")
+	var svg = d3.select( ".video-timeline" )
 			.attr("width", width)
 			.attr("height", height);
 	var bigG = svg
@@ -157,15 +201,15 @@ var VideoPlayer = Backbone.View.extend({
 		.text(">");
 
 
-	var data = [ 80 ];
+	var data = [ 0, 100 ];
 	var g = bigG.selectAll(".arc")
 			.data(pie(data))
 			.enter()
 				.append("g")
 				.attr("class", "arc");
 	/*g.on("mousemove", function(d){
-		
-		var ang = d.startAngle + (d.endAngle - d.startAngle)/2; 
+
+		var ang = d.startAngle + (d.endAngle - d.startAngle)/2;
 		// Transformate to SVG space
 		ang = (ang - (Math.PI / 2) ) * -1;
 
@@ -174,10 +218,18 @@ var VideoPlayer = Backbone.View.extend({
 		var y = Math.sin(ang) * radius * -0.1;
 		console.log( this, d, x, y, radius );
 	});*/
-	g.append("path")
+	var path = g.append("path")
 			.attr("d", arc)
-			.style("fill", function( d ){ return d.data === 80 ?  "#25272A" : "transparent"; });
-
+			.style("fill", function( d, i ){ return !i ? "red" :  "#25272A"; })
+			.each(function(d) { this._current = d; });
+function arcTween(a) {
+	var i = d3.interpolate(this._current, a);
+	this._current = i(0);
+	return function(t) {
+		return arc(i(t));
+	};
+}
+/*
 var addNewPie = function(){
 
 	var arc = d3.svg.arc()
@@ -186,27 +238,42 @@ var addNewPie = function(){
 
 	var pie = d3.layout.pie()
 			.sort(null)
-			.value(function( d ){ return d;});
-
+			.value(function( d ){ return d;})
+			.startAngle( 0.2 )
+			.endAngle( 4.9 );
 
 	var bigG = svg
 		.append("g")
 			.attr("transform", "translate(" + 40 + "," +40 + ")  rotate(215)");
 
 
-	var data = [ 40, 60 ];
+	var data = [ 80, 20 ];
 	var g = bigG.selectAll(".arc")
 			.data(pie(data))
 			.enter()
 				.append("g")
 				.attr("class", "arc");
 
-	g.append("path")
+	var path = g.append("path")
 			.attr("d", arc)
-			.style("fill", function( d ){ return d.data === 40 ?  "red" : "transparent"; });
+			.each(function(d) { this._current = d; })
+			.style("fill", function( d, i ){ console.log("d,i", d,i);return !i ? "red" : "transparent" });
+	function arcTween(a) {
+		var i = d3.interpolate(this._current, a);
+		this._current = i(0);
+		return function(t) {
+			return arc(i(t));
+		};
+	}
+	setTimeout(function(){
+		console.log("set data" );
+	path = path.data(pie([60,40])); // update the data
+			path.transition().duration(150).attrTween("d", arcTween);
+	}, 5000);
+	return path;
 };
 
-
+*/
 
 var videoPlayer = new VideoPlayer({
 		el: document.body
