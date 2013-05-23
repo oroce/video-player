@@ -46,7 +46,7 @@ var VideoPlayer = Backbone.View.extend({
 	},
 
 	stateChange: function(){
-		console.log("stateChange")
+		
 		var oldState = this._state;
 		if( this.videoEl.paused !== true ){
 			this._state = "play";
@@ -65,9 +65,14 @@ var VideoPlayer = Backbone.View.extend({
 	},
 	preventScrolling: function( addOrRemove ){
 		$( "html, body" ).toggleClass( "prevent-scroll", addOrRemove );
-		$( document ).on( "touchmove", function( e ){
-			//e.preventDefault();
-		});
+		if( addOrRemove ){
+			$( document ).on( "touchmove.vp", function( e ){
+				e.preventDefault();
+			});
+		}
+		else{
+			$( document ).off( "touchmove.vp" );
+		}
 	},
 	currentTime: function( percent ){
 		percent = percent || this.val();
