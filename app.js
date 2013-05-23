@@ -20,7 +20,8 @@ var VideoPlayer = Backbone.View.extend({
 		});*/
 		this.videoEl = this.$( "video" )
 			.on( "timeupdate", _.bind( this.onTimeUpdate, this ) )[0];
-		this.$( ".arc" ).on("mousedown", _.bind( this.onmousemove, this ) );
+		this.$( ".arc" )
+			.on( "mousedown", _.bind( this.onmousedown, this ) );
 		this._v = 0;
 		var o = this.$( "svg" ).offset();
 		this.x = o.left;
@@ -70,6 +71,15 @@ var VideoPlayer = Backbone.View.extend({
 			this._draw();
 		}
 		this.$( ".video-time strong" ).text( [ hours, minutes, secs ].join( ":" ) );
+	},
+	onmousedown: function( e ){
+		this.$( ".arc" )
+			.on( "mousemove.vp", _.bind( this.onmousemove, this ) )
+			.on( "mouseup.vp", _.bind( this.onmouseup, this ) )
+		this.onmousemove( e );
+	},
+	onmouseup: function( e ){
+		this.$( ".arc" ).off( "mousemove.vp mouseup.vp" );
 	},
 	onmousemove: function( e ){
 		//console.log( "move", e, e.originalEvent );
@@ -130,7 +140,7 @@ var VideoPlayer = Backbone.View.extend({
 		this.val(v);
 	},
 	_draw: function(){
-		console.log( "draw that shit", this.val(), [this.val(), 100 - this.val()] );
+		//console.log( "draw that shit", this.val(), [this.val(), 100 - this.val()] );
 		path = path.data(pie([this.val(), 100 - this.val()])); // update the data
 		path.transition().duration(10).attrTween("d", arcTween);
 		//this.onTimeUpdate( false );
