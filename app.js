@@ -65,6 +65,9 @@ var VideoPlayer = Backbone.View.extend({
 	},
 	preventScrolling: function( addOrRemove ){
 		$( "html, body" ).toggleClass( "prevent-scroll", addOrRemove );
+		$( document ).on( "touchmove", function( e ){
+			//e.preventDefault();
+		});
 	},
 	currentTime: function( percent ){
 		percent = percent || this.val();
