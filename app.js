@@ -18,10 +18,12 @@ var VideoPlayer = Backbone.View.extend({
 		this.knobEl.knob({
 			change: _.bind( this.onChange, this )
 		});*/
-		this.videoEl = this.$( "video" )
-			.on( "timeupdate", _.bind( this.onTimeUpdate, this ) )[0];
+		this.$videoEl = this.$( "video" )
+			.on( "timeupdate", _.bind( this.onTimeUpdate, this ) );
+		this.videoEl = this.$videoEl[0];
 		this.$( ".arc" )
-			.on( "mousedown", _.bind( this.onmousedown, this ) );
+			.on( "mousedown", _.bind( this.onmousedown, this ) )
+			.on( "touchstart", _.bind( this.ontouchstart, this ) );
 		this._v = 0;
 		var o = this.$( "svg" ).offset();
 		this.x = o.left;
@@ -34,6 +36,7 @@ var VideoPlayer = Backbone.View.extend({
 			step: 1,
 			stopper: true
 		};
+		this._t = 0;
 
 		this.$el.find(".state-button").on( "click", _.bind( this.stateChange, this ));
 	},
@@ -60,6 +63,21 @@ var VideoPlayer = Backbone.View.extend({
 	formatTime: function( num ){
 		return ( "0" + Math.floor( num ) ).slice( -2 );
 	},
+	currentTime: function( percent ){
+		percent = percent || this.val();
+		if( this.videoEl.readyState > 0 ){
+			var time = this.videoEl.duration * (percent / 100);
+			this.videoEl.currentTime = time;
+		}
+		else{
+			this.$videoEl
+				.off( "loadedmetadata.ct" )
+				.one( "loadedmetadata.ct", function(){
+					var time = this.duration * (percent / 100);
+					this.currentTime = time;
+				});
+		}
+	},
 	onTimeUpdate: function( draw ){
 		var value = (100 / this.videoEl.duration) * this.videoEl.currentTime;
 		var time = this.videoEl.currentTime;
@@ -72,6 +90,41 @@ var VideoPlayer = Backbone.View.extend({
 		}
 		this.$( ".video-time strong" ).text( [ hours, minutes, secs ].join( ":" ) );
 	},
+	touchIndex: function( e ){
+		return e.originalEvent.touches.length - 1;
+	},
+	ontouchmove: function( e ){
+		var v = this.xy2val(
+			e.originalEvent.touches[this._t].pageX,
+			e.originalEvent.touches[this._t].pageY
+		);
+
+		if (v == this.cv){
+			console.log("v equals cv",{
+				v: v,
+				cv: this.cv
+			});
+			return;
+		}
+
+		this.change(this._validate(v));
+		this._draw();
+		this.currentTime();
+	},
+	ontouchstart: function( e ){
+		console.log("touchstart")
+		this.$( ".arc" )
+			.on( "touchmove.vp", _.bind( this.ontouchmove, this ) )
+			.on( "touchend.vp", _.bind( this.ontouchend, this ) );
+		this._t = this.touchIndex( e );
+		this.ontouchmove( e );
+	},
+	ontouchend: function( e ){
+		this.$( ".arc" ).off( "touchmove.vp touchend.vp" );
+
+		//this.val( this.cv );
+		//this._draw();
+	},
 	onmousedown: function( e ){
 		this.$( ".arc" )
 			.on( "mousemove.vp", _.bind( this.onmousemove, this ) )
@@ -80,6 +133,9 @@ var VideoPlayer = Backbone.View.extend({
 	},
 	onmouseup: function( e ){
 		this.$( ".arc" ).off( "mousemove.vp mouseup.vp" );
+
+		//this.val( this.cv );
+		//this._draw();
 	},
 	onmousemove: function( e ){
 		//console.log( "move", e, e.originalEvent );
@@ -94,8 +150,7 @@ var VideoPlayer = Backbone.View.extend({
 
 		this.change(this._validate(v));
 		this._draw();
-		var time = this.videoEl.duration * (this.val() / 100);
-		this.videoEl.currentTime = time;
+		this.currentTime();
 	},
 	val: function( v ){
 		if( v == null ){
@@ -105,8 +160,7 @@ var VideoPlayer = Backbone.View.extend({
 
 	},
 	onChange: function( value ){
-		var time = this.videoEl.duration * (value / 100);
-		this.videoEl.currentTime = time;
+		this.currentTime( value );
 	},
 	angleOffset: -130 * Math.PI / 180,
 	angleArc: 310 * Math.PI / 180,
