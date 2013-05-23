@@ -63,6 +63,9 @@ var VideoPlayer = Backbone.View.extend({
 	formatTime: function( num ){
 		return ( "0" + Math.floor( num ) ).slice( -2 );
 	},
+	preventScrolling: function( addOrRemove ){
+		$( "html" ).toggleClass( "prevent-scroll", addOrRemove );
+	},
 	currentTime: function( percent ){
 		percent = percent || this.val();
 		if( this.videoEl.readyState > 0 ){
@@ -117,23 +120,25 @@ var VideoPlayer = Backbone.View.extend({
 			.on( "touchmove.vp", _.bind( this.ontouchmove, this ) )
 			.on( "touchend.vp", _.bind( this.ontouchend, this ) );
 		this._t = this.touchIndex( e );
+		this.preventScrolling( true );
 		this.ontouchmove( e );
 	},
 	ontouchend: function( e ){
 		this.$( ".arc" ).off( "touchmove.vp touchend.vp" );
-
+		this.preventScrolling( false );
 		//this.val( this.cv );
 		//this._draw();
 	},
 	onmousedown: function( e ){
 		this.$( ".arc" )
 			.on( "mousemove.vp", _.bind( this.onmousemove, this ) )
-			.on( "mouseup.vp", _.bind( this.onmouseup, this ) )
+			.on( "mouseup.vp", _.bind( this.onmouseup, this ) );
+		this.preventScrolling( true );
 		this.onmousemove( e );
 	},
 	onmouseup: function( e ){
 		this.$( ".arc" ).off( "mousemove.vp mouseup.vp" );
-
+		this.preventScrolling( false );
 		//this.val( this.cv );
 		//this._draw();
 	},

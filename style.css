@@ -181,3 +181,6 @@
 .video-controlling{
 	width: 160px;
 }
+.prevent-scroll{
+	overflow:hidden;
+}
