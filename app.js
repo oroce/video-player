@@ -39,6 +39,7 @@ var VideoPlayer = Backbone.View.extend({
 		this._t = 0;
 
 		this.$el.find(".state-button").on( "click", _.bind( this.stateChange, this ));
+		this._playbackFunc = _.bind( this._playbackFunc, this );
 	},
 
 	setStateButton: function(){
@@ -46,7 +47,7 @@ var VideoPlayer = Backbone.View.extend({
 	},
 
 	stateChange: function(){
-		
+
 		var oldState = this._state;
 		if( this.videoEl.paused !== true ){
 			this._state = "play";
@@ -59,6 +60,10 @@ var VideoPlayer = Backbone.View.extend({
 		this.trigger( "state-change", this._state, oldState );
 
 		this.setStateButton();
+		console.log("statechange", this._playbackRate );
+		if( this._playbackRate !== 1 ){
+			this.setPlaybackRate( 1 );
+		}
 	},
 	formatTime: function( num ){
 		return ( "0" + Math.floor( num ) ).slice( -2 );
@@ -212,8 +217,35 @@ var VideoPlayer = Backbone.View.extend({
 		path.transition().duration(10).attrTween("d", arcTween);
 		//this.onTimeUpdate( false );
 	},
+	_playbackRate: 1,
+	_playbackFunc: function(){
+		this.videoEl.currentTime += this._playbackRate;
+		console.log("playbackFunc", this._playbackRate,this.videoEl.currentTime,  this.videoEl.duration );
+		if( this._playbackRate === 1 || this.videoEl.currentTime === 0 || this.videoEl.currentTime === this.videoEl.duration ){
+			return;
+		}
+		this._playbackInterval = setTimeout( this._playbackFunc, 500 );
+	},
+	setPlaybackRate: function( rate ){
+		clearTimeout( this._playbackInterval );
+		this._playbackRate = rate || 1;
+		if( this._playbackRate === 1 ){
+			return;
+		}
+		var _set = _.bind( function(){
+			this._playbackFunc();
+		}, this );
+		if( this.videoEl.readyState > 0 ){
+			_set();
+		}
+		else{
+			this.$videoEl
+				.off( "loadedmetadata.pbr" )
+				.one( "loadedmetadata.pbr", _set );
+		}
+	},
 	rewind: function(){
-		var playbackRate = this.videoEl.playbackRate,
+		var playbackRate = this._playbackRate,
 				newRate;
 
 		if( playbackRate < 0 ){
@@ -221,13 +253,13 @@ var VideoPlayer = Backbone.View.extend({
 			newRate = 1;
 		}
 		else{
-			newRate = -5;
+			newRate = -2;
 		}
-		this.videoEl.playbackRate = newRate;
+		this.setPlaybackRate( newRate );
 	},
 
 	forward: function(){
-		var playbackRate = this.videoEl.playbackRate,
+		var playbackRate = this._playbackRate,
 				newRate;
 
 		if( playbackRate > 1 ){
@@ -235,9 +267,9 @@ var VideoPlayer = Backbone.View.extend({
 			newRate = 1;
 		}
 		else{
-			newRate = 5;
+			newRate = 2;
 		}
-		this.videoEl.playbackRate = newRate;
+		this.setPlaybackRate( newRate );
 	}
 }, {
 	stateTexts: {
